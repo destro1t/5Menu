@@ -2,6 +2,9 @@
 
 A modern, customizable application launcher similar to Rofi, built with Rust and Iced GUI framework.
 
+![image](https://github.com/user-attachments/assets/ab59649e-7c8d-4dc1-98da-6d7e9fdd47bd)
+
+
 ## Features
 
 - **Fast Application Search**: Fuzzy search through installed applications
