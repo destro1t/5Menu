@@ -1,0 +1,9 @@
+name = "ocean"
+background_color = "#0F3460"
+text_color = "#16537E"
+selected_background_color = "#1A5490"
+selected_text_color = "#E8F4FD"
+border_color = "#5DADE2"
+border_width = 2.0
+border_radius = 6.0
+padding = 12.0

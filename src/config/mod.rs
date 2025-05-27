@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
-use crate::themes::Theme;
 use anyhow::Result;
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -72,4 +72,28 @@ impl Theme {
             a as f32 / 255.0,
         )
     }
+
+    pub fn get_available_themes() -> Vec<String> {
+        let theme_dir = dirs::config_dir()
+            .map(|d| d.join("5menu").join("themes"))
+            .unwrap_or_else(|| PathBuf::from("config/themes"));
+        
+        let mut themes = vec!["default".to_string()];
+        
+        if let Ok(entries) = std::fs::read_dir(&theme_dir) {
+            for entry in entries.filter_map(Result::ok) {
+                if let Some(name) = entry.file_name().to_str() {
+                    if name.ends_with(".toml") {
+                        let theme_name = name.trim_end_matches(".toml").to_string();
+                        if theme_name != "default" {
+                            themes.push(theme_name);
+                        }
+                    }
+                }
+            }
+        }
+        
+        themes.sort();
+        themes
+    }
 }

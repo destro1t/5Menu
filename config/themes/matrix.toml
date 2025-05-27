@@ -1,0 +1,9 @@
+name = "matrix"
+background_color = "#000000"
+text_color = "#00FF00"
+selected_background_color = "#003300"
+selected_text_color = "#00FF00"
+border_color = "#008000"
+border_width = 1.0
+border_radius = 4.0
+padding = 12.0

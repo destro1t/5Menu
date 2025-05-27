@@ -1,0 +1,9 @@
+name = "ketputin"
+background_color = "#8B0000"
+text_color = "#FFD700"
+selected_background_color = "#FF4500"
+selected_text_color = "#000000"
+border_color = "#DAA520"
+border_width = 2.0
+border_radius = 8.0
+padding = 12.0

@@ -6,10 +6,10 @@ use iced::{
     Background, Color,
     keyboard,
     mouse,
-    event::{self, Event},
+    event::Event,
     subscription,
 };
-use crate::{config::Config, themes::Theme as AppTheme};
+use crate::{config::Config, themes::{Theme as AppTheme}};
 
 // Custom styles for our UI elements
 mod style {
@@ -105,6 +105,8 @@ pub enum Message {
     Error(String),
     EntrySelected(usize),
     WheelScrolled(mouse::ScrollDelta),
+    ChangeTheme(String),
+    BackToMain,
 }
 
 pub struct MenuWindow {
@@ -115,6 +117,7 @@ pub struct MenuWindow {
     filtered_entries: Vec<String>,
     selected_index: usize,
     display_start_index: usize,
+    settings_mode: bool,
 }
 
 impl Application for MenuWindow {
@@ -139,6 +142,7 @@ impl Application for MenuWindow {
                 filtered_entries,
                 selected_index: 0,
                 display_start_index: 0,
+                settings_mode: false,
             },
             Command::none(),
         )
@@ -151,10 +155,20 @@ impl Application for MenuWindow {
     fn update(&mut self, message: Message) -> Command<Message> {
         match message {
             Message::InputChanged(value) => {
-                self.input_value = value;
-                self.filter_entries();
-                self.selected_index = 0;
-                self.display_start_index = 0;
+                self.input_value = value.clone();
+                
+                // Check for settings command
+                if value.trim() == "> Settings" || value.trim() == ">Settings" {
+                    self.settings_mode = true;
+                    self.filtered_entries = self.get_settings_options();
+                    self.selected_index = 0;
+                    self.display_start_index = 0;
+                } else {
+                    self.settings_mode = false;
+                    self.filter_entries();
+                    self.selected_index = 0;
+                    self.display_start_index = 0;
+                }
                 Command::none()
             }
             Message::Execute(cmd) => {
@@ -182,7 +196,11 @@ impl Application for MenuWindow {
                     keyboard::KeyCode::Enter => {
                         if self.selected_index < self.filtered_entries.len() {
                             if let Some(entry) = self.filtered_entries.get(self.selected_index).cloned() {
-                                Command::perform(async { entry }, Message::Execute)
+                                if self.settings_mode {
+                                    self.handle_settings_selection(&entry)
+                                } else {
+                                    Command::perform(async { entry }, Message::Execute)
+                                }
                             } else {
                                 Command::none()
                             }
@@ -200,7 +218,11 @@ impl Application for MenuWindow {
                 if index < self.filtered_entries.len() {
                     self.selected_index = index;
                     if let Some(entry) = self.filtered_entries.get(index).cloned() {
-                        Command::perform(async { entry }, Message::Execute)
+                        if self.settings_mode {
+                            self.handle_settings_selection(&entry)
+                        } else {
+                            Command::perform(async { entry }, Message::Execute)
+                        }
                     } else {
                         Command::none()
                     }
@@ -222,6 +244,22 @@ impl Application for MenuWindow {
                 Command::none()
             }
             Message::Error(_) => Command::none(),
+            Message::ChangeTheme(theme_name) => {
+                if let Ok(new_theme) = AppTheme::load(&theme_name) {
+                    self.theme = new_theme;
+                    self.config.theme = theme_name;
+                    let _ = self.config.save();
+                }
+                Command::none()
+            }
+            Message::BackToMain => {
+                self.settings_mode = false;
+                self.input_value.clear();
+                self.filtered_entries = self.entries.clone().into_iter().take(self.config.max_entries).collect();
+                self.selected_index = 0;
+                self.display_start_index = 0;
+                Command::none()
+            }
         }
     }
 
@@ -249,6 +287,17 @@ impl Application for MenuWindow {
                     .map(|s| s.as_str())
                     .unwrap_or("");
 
+                // Add prefix for settings mode
+                let display_text = if self.settings_mode && !entry_text.is_empty() {
+                    if entry_text.starts_with("Theme: ") {
+                        entry_text.to_string()
+                    } else {
+                        format!("⚙ {}", entry_text)
+                    }
+                } else {
+                    entry_text.to_string()
+                };
+
                 let (bg_color, text_color) = if !entry_text.is_empty() && actual_index == self.selected_index {
                     (
                         self.theme.parse_color(&self.theme.selected_background_color),
@@ -261,7 +310,7 @@ impl Application for MenuWindow {
                     )
                 };
 
-                let text = Text::new(entry_text)
+                let text = Text::new(display_text)
                     .style(TextTheme::Color(text_color));
 
                 container(text)
@@ -368,6 +417,34 @@ impl MenuWindow {
             .map(|(_, entry)| entry.clone())
             .take(self.config.max_entries)
             .collect();
+    }
+
+    fn get_settings_options(&self) -> Vec<String> {
+        let mut options = vec!["Back to Main".to_string()];
+        
+        // Add available themes
+        let themes = AppTheme::get_available_themes();
+        for theme in themes {
+            options.push(format!("Theme: {}", theme));
+        }
+        
+        // Add current settings info
+        options.push(format!("Current Theme: {}", self.config.theme));
+        options.push(format!("Font Size: {}", self.config.font_size));
+        options.push(format!("Max Entries: {}", self.config.max_entries));
+        
+        options
+    }
+
+    fn handle_settings_selection(&mut self, entry: &str) -> Command<Message> {
+        if entry == "Back to Main" {
+            Command::perform(async {}, |_| Message::BackToMain)
+        } else if entry.starts_with("Theme: ") {
+            let theme_name = entry.strip_prefix("Theme: ").unwrap_or("default").to_string();
+            Command::perform(async move { theme_name }, Message::ChangeTheme)
+        } else {
+            Command::none()
+        }
     }
 
     fn execute_command(&self, cmd: &str) -> Result<()> {
