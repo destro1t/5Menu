@@ -1,0 +1,9 @@
+name = "dark"
+background_color = "#1a1b26"
+text_color = "#a9b1d6"
+selected_background_color = "#7aa2f7"
+selected_text_color = "#1a1b26"
+border_color = "#414868"
+border_width = 2.0
+border_radius = 8.0
+padding = 12.0

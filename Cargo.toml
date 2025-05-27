@@ -1,0 +1,32 @@
+[package]
+name = "fmenu"
+version = "0.1.0"
+edition = "2021"
+description = "A modern application launcher and menu system similar to Rofi"
+authors = ["Your Name <your.email@example.com>"]
+
+[[bin]]
+name = "5menu"
+path = "src/main.rs"
+
+[dependencies]
+# GUI framework
+iced = { version = "0.10", features = ["tokio", "debug"] }
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+# File system
+dirs = "5.0"
+# Fuzzy searching
+fuzzy-matcher = "0.3"
+# Process management
+which = "5.0"
+# Async runtime
+tokio = { version = "1.32", features = ["full"] }
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+# Logging
+log = "0.4"
+env_logger = "0.10"
