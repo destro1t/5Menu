@@ -4,6 +4,8 @@ A modern, customizable application launcher similar to Rofi, built with Rust and
 
 ![image](https://github.com/user-attachments/assets/ab59649e-7c8d-4dc1-98da-6d7e9fdd47bd)
 
+![image](https://github.com/user-attachments/assets/5f843e2f-1af3-4438-a54e-32c1d55950b3)
+
 
 ## Features
 
